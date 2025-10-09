@@ -1,0 +1,129 @@
+{
+  "timestamp": "2025-10-09T17:58:22.956Z",
+  "results": [
+    {
+      "operation": "Cache SET",
+      "library": "Bun Redis",
+      "iterations": 10000,
+      "duration": 279.765833,
+      "opsPerSecond": 35744.17895411839,
+      "avgTimePerOp": 0.0279765833
+    },
+    {
+      "operation": "Cache SET",
+      "library": "redis",
+      "iterations": 10000,
+      "duration": 356.520125,
+      "opsPerSecond": 28048.907477523182,
+      "avgTimePerOp": 0.035652012500000003
+    },
+    {
+      "operation": "Cache GET",
+      "library": "Bun Redis",
+      "iterations": 10000,
+      "duration": 296.53212500000006,
+      "opsPerSecond": 33723.15900005774,
+      "avgTimePerOp": 0.029653212500000005
+    },
+    {
+      "operation": "Cache GET",
+      "library": "redis",
+      "iterations": 10000,
+      "duration": 338.566542,
+      "opsPerSecond": 29536.291273577765,
+      "avgTimePerOp": 0.0338566542
+    },
+    {
+      "operation": "Cache DEL",
+      "library": "Bun Redis",
+      "iterations": 10000,
+      "duration": 577.3729580000002,
+      "opsPerSecond": 17319.827438125354,
+      "avgTimePerOp": 0.05773729580000002
+    },
+    {
+      "operation": "Cache DEL",
+      "library": "redis",
+      "iterations": 10000,
+      "duration": 792.712583,
+      "opsPerSecond": 12614.91266122617,
+      "avgTimePerOp": 0.0792712583
+    },
+    {
+      "operation": "Pub/Sub PUBLISH",
+      "library": "Bun Redis",
+      "iterations": 10000,
+      "duration": 221.38808299999982,
+      "opsPerSecond": 45169.549618440884,
+      "avgTimePerOp": 0.022138808299999983
+    },
+    {
+      "operation": "Pub/Sub PUBLISH",
+      "library": "redis",
+      "iterations": 10000,
+      "duration": 287.70170899999994,
+      "opsPerSecond": 34758.22244768106,
+      "avgTimePerOp": 0.028770170899999992
+    },
+    {
+      "operation": "Pub/Sub SUB/UNSUB",
+      "library": "Bun Redis",
+      "iterations": 100,
+      "duration": 4.512333000000126,
+      "opsPerSecond": 22161.48497905567,
+      "avgTimePerOp": 0.04512333000000126
+    },
+    {
+      "operation": "Pub/Sub SUBSCRIBE",
+      "library": "redis",
+      "iterations": 10000,
+      "duration": 417.15549999999985,
+      "opsPerSecond": 23971.876194848213,
+      "avgTimePerOp": 0.04171554999999998
+    }
+  ],
+  "summary": {
+    "Cache SET": {
+      "fastest": "Bun Redis",
+      "fastestOps": 35744.17895411839,
+      "slowest": "redis",
+      "slowestOps": 28048.907477523182,
+      "speedupMultiplier": 1.2743519148744658
+    },
+    "Cache GET": {
+      "fastest": "Bun Redis",
+      "fastestOps": 33723.15900005774,
+      "slowest": "redis",
+      "slowestOps": 29536.291273577765,
+      "speedupMultiplier": 1.1417533327965728
+    },
+    "Cache DEL": {
+      "fastest": "Bun Redis",
+      "fastestOps": 17319.827438125354,
+      "slowest": "redis",
+      "slowestOps": 12614.91266122617,
+      "speedupMultiplier": 1.372964514559062
+    },
+    "Pub/Sub PUBLISH": {
+      "fastest": "Bun Redis",
+      "fastestOps": 45169.549618440884,
+      "slowest": "redis",
+      "slowestOps": 34758.22244768106,
+      "speedupMultiplier": 1.2995356619985736
+    },
+    "Pub/Sub SUB/UNSUB": {
+      "fastest": "Bun Redis",
+      "fastestOps": 22161.48497905567,
+      "slowest": "Bun Redis",
+      "slowestOps": 22161.48497905567,
+      "speedupMultiplier": 1
+    },
+    "Pub/Sub SUBSCRIBE": {
+      "fastest": "redis",
+      "fastestOps": 23971.876194848213,
+      "slowest": "redis",
+      "slowestOps": 23971.876194848213,
+      "speedupMultiplier": 1
+    }
+  }
+}

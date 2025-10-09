@@ -1,0 +1,99 @@
+{
+  "timestamp": "2025-10-09T18:00:57.581Z",
+  "results": [
+    {
+      "operation": "INSERT",
+      "library": "Bun SQL",
+      "iterations": 10000,
+      "duration": 1074.8744579999998,
+      "opsPerSecond": 9303.41206414638,
+      "avgTimePerOp": 0.10748744579999998
+    },
+    {
+      "operation": "INSERT",
+      "library": "mariadb",
+      "iterations": 10000,
+      "duration": 1206.0397919999998,
+      "opsPerSecond": 8291.600381954895,
+      "avgTimePerOp": 0.12060397919999997
+    },
+    {
+      "operation": "SELECT",
+      "library": "Bun SQL",
+      "iterations": 10000,
+      "duration": 1400.3699159999996,
+      "opsPerSecond": 7140.970314875004,
+      "avgTimePerOp": 0.14003699159999997
+    },
+    {
+      "operation": "SELECT",
+      "library": "mariadb",
+      "iterations": 10000,
+      "duration": 1187.9322089999996,
+      "opsPerSecond": 8417.988774307241,
+      "avgTimePerOp": 0.11879322089999995
+    },
+    {
+      "operation": "UPDATE",
+      "library": "Bun SQL",
+      "iterations": 10000,
+      "duration": 1198.9519999999993,
+      "opsPerSecond": 8340.617472592736,
+      "avgTimePerOp": 0.11989519999999994
+    },
+    {
+      "operation": "UPDATE",
+      "library": "mariadb",
+      "iterations": 10000,
+      "duration": 1217.3294579999992,
+      "opsPerSecond": 8214.703040563409,
+      "avgTimePerOp": 0.12173294579999992
+    },
+    {
+      "operation": "DELETE",
+      "library": "Bun SQL",
+      "iterations": 10000,
+      "duration": 542.7192500000001,
+      "opsPerSecond": 18425.73301020739,
+      "avgTimePerOp": 0.05427192500000001
+    },
+    {
+      "operation": "DELETE",
+      "library": "mariadb",
+      "iterations": 10000,
+      "duration": 525.2025419999991,
+      "opsPerSecond": 19040.27341893562,
+      "avgTimePerOp": 0.05252025419999991
+    }
+  ],
+  "summary": {
+    "INSERT": {
+      "fastest": "Bun SQL",
+      "fastestOps": 9303.41206414638,
+      "slowest": "mariadb",
+      "slowestOps": 8291.600381954895,
+      "speedupMultiplier": 1.122028515073339
+    },
+    "SELECT": {
+      "fastest": "mariadb",
+      "fastestOps": 8417.988774307241,
+      "slowest": "Bun SQL",
+      "slowestOps": 7140.970314875004,
+      "speedupMultiplier": 1.178829823276557
+    },
+    "UPDATE": {
+      "fastest": "Bun SQL",
+      "fastestOps": 8340.617472592736,
+      "slowest": "mariadb",
+      "slowestOps": 8214.703040563409,
+      "speedupMultiplier": 1.0153279347296638
+    },
+    "DELETE": {
+      "fastest": "mariadb",
+      "fastestOps": 19040.27341893562,
+      "slowest": "Bun SQL",
+      "slowestOps": 18425.73301020739,
+      "speedupMultiplier": 1.033352290971968
+    }
+  }
+}

@@ -1,0 +1,23 @@
+{
+  "name": "bunapi",
+  "module": "index.ts",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "bench:all": "bun run benchmarks/index.ts",
+    "bench:sqlite": "bun run benchmarks/sqlite.ts",
+    "bench:mariadb": "bun run benchmarks/mariadb.ts",
+    "bench:redis": "bun run benchmarks/redis.ts"
+  },
+  "devDependencies": {
+    "@types/bun": "latest"
+  },
+  "peerDependencies": {
+    "typescript": "^5"
+  },
+  "dependencies": {
+    "mariadb": "^3.4.5",
+    "redis": "^5.8.3",
+    "sql.js": "^1.13.0"
+  }
+}

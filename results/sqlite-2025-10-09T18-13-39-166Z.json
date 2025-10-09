@@ -1,0 +1,99 @@
+{
+  "timestamp": "2025-10-09T18:13:39.166Z",
+  "results": [
+    {
+      "operation": "INSERT",
+      "library": "Bun SQLite",
+      "iterations": 10000,
+      "duration": 49.72633400000001,
+      "opsPerSecond": 201100.6884199426,
+      "avgTimePerOp": 0.004972633400000001
+    },
+    {
+      "operation": "INSERT",
+      "library": "sql.js",
+      "iterations": 10000,
+      "duration": 650.2413750000001,
+      "opsPerSecond": 15378.904487583552,
+      "avgTimePerOp": 0.06502413750000001
+    },
+    {
+      "operation": "SELECT",
+      "library": "Bun SQLite",
+      "iterations": 10000,
+      "duration": 290.277333,
+      "opsPerSecond": 34449.81355123585,
+      "avgTimePerOp": 0.0290277333
+    },
+    {
+      "operation": "SELECT",
+      "library": "sql.js",
+      "iterations": 10000,
+      "duration": 694.0030829999998,
+      "opsPerSecond": 14409.157891305798,
+      "avgTimePerOp": 0.06940030829999998
+    },
+    {
+      "operation": "UPDATE",
+      "library": "Bun SQLite",
+      "iterations": 10000,
+      "duration": 30.800874999999905,
+      "opsPerSecond": 324666.1012065414,
+      "avgTimePerOp": 0.0030800874999999906
+    },
+    {
+      "operation": "UPDATE",
+      "library": "sql.js",
+      "iterations": 10000,
+      "duration": 487.18883300000016,
+      "opsPerSecond": 20525.922029908263,
+      "avgTimePerOp": 0.048718883300000015
+    },
+    {
+      "operation": "DELETE",
+      "library": "Bun SQLite",
+      "iterations": 10000,
+      "duration": 86.3190410000002,
+      "opsPerSecond": 115849.29447953409,
+      "avgTimePerOp": 0.00863190410000002
+    },
+    {
+      "operation": "DELETE",
+      "library": "sql.js",
+      "iterations": 10000,
+      "duration": 1032.203208,
+      "opsPerSecond": 9688.014842906787,
+      "avgTimePerOp": 0.10322032079999999
+    }
+  ],
+  "summary": {
+    "INSERT": {
+      "fastest": "Bun SQLite",
+      "fastestOps": 201100.6884199426,
+      "slowest": "sql.js",
+      "slowestOps": 15378.904487583552,
+      "speedupMultiplier": 13.076398815163007
+    },
+    "SELECT": {
+      "fastest": "Bun SQLite",
+      "fastestOps": 34449.81355123585,
+      "slowest": "sql.js",
+      "slowestOps": 14409.157891305798,
+      "speedupMultiplier": 2.390827681333285
+    },
+    "UPDATE": {
+      "fastest": "Bun SQLite",
+      "fastestOps": 324666.1012065414,
+      "slowest": "sql.js",
+      "slowestOps": 20525.922029908263,
+      "speedupMultiplier": 15.817369896147484
+    },
+    "DELETE": {
+      "fastest": "Bun SQLite",
+      "fastestOps": 115849.29447953409,
+      "slowest": "sql.js",
+      "slowestOps": 9688.014842906787,
+      "speedupMultiplier": 11.958001340631176
+    }
+  }
+}
