@@ -1,10 +1,12 @@
 import { Database as BunDatabase } from "bun:sqlite";
 import { redis } from "bun";
+import { createClient } from "redis";
 import { existsSync, unlinkSync } from "fs";
 import { benchmark, printResults, saveResults, type BenchmarkResult } from "./utils";
 
 const ITERATIONS = 100_000;
 const BUN_DB_FILE = "bench_bun_compare.db";
+const REDIS_URL = "redis://localhost:6379";
 
 // ============================================ 
 // SETUP
@@ -38,6 +40,14 @@ async function setupBunSqlite() {
 async function setupBunRedis() {
     // Bun uses global redis instance
     return redis;
+}
+
+async function setupRedisClient() {
+    const client = createClient({ url: REDIS_URL });
+    await client.connect();
+    // Clean data for testing
+    await client.flushDb();
+    return client;
 }
 
 // ============================================ 
@@ -76,6 +86,23 @@ async function benchmarkRedisSet() {
         { name: "Bun Redis SET", iterations: ITERATIONS }
     );
 
+    return result;
+}
+
+async function benchmarkRedisClientSet() {
+    const client = await setupRedisClient();
+
+    const result = await benchmark(
+        "redis SET",
+        async () => {
+            const key = `key_${Math.random()}`;
+            const value = `value_${Math.random()}`;
+            await client.set(key, value);
+        },
+        { name: "redis SET", iterations: ITERATIONS }
+    );
+
+    await client.quit();
     return result;
 }
 
@@ -126,6 +153,26 @@ async function benchmarkRedisGet() {
     return result;
 }
 
+async function benchmarkRedisClientGet() {
+    const client = await setupRedisClient();
+
+    // Add test data
+    for (let i = 0; i < 1000; i++) {
+        await client.set(`key_${i}`, `value_${i}`);
+    }
+
+    const result = await benchmark(
+        "redis GET",
+        async () => {
+            await client.get(`key_${Math.floor(Math.random() * 1000)}`);
+        },
+        { name: "redis GET", iterations: ITERATIONS }
+    );
+
+    await client.quit();
+    return result;
+}
+
 // ============================================ 
 // MAIN BENCHMARK RUNNER
 // ============================================ 
@@ -138,18 +185,25 @@ export async function runCompareBenchmarks() {
     // WRITE Benchmarks
     console.log("📊 Running WRITE tests (INSERT vs SET)...");
     const sqliteInsert = await benchmarkSqliteInsert();
-    results.push({ operation: "WRITE", library: "Bun SQLite (File)", ...sqliteInsert });
+    results.push({ operation: "WRITE", library: "Bun SQLite", ...sqliteInsert });
 
-    const redisSet = await benchmarkRedisSet();
-    results.push({ operation: "WRITE", library: "Bun Redis", ...redisSet });
+    const bunRedisSet = await benchmarkRedisSet();
+    results.push({ operation: "WRITE", library: "Bun Redis", ...bunRedisSet });
+
+    const redisSet = await benchmarkRedisClientSet();
+    results.push({ operation: "WRITE", library: "redis", ...redisSet });
+
 
     // READ Benchmarks
     console.log("📊 Running READ tests (SELECT vs GET)...");
     const sqliteSelect = await benchmarkSqliteSelect();
-    results.push({ operation: "READ", library: "Bun SQLite (File)", ...sqliteSelect });
+    results.push({ operation: "READ", library: "Bun SQLite", ...sqliteSelect });
 
-    const redisGet = await benchmarkRedisGet();
-    results.push({ operation: "READ", library: "Bun Redis", ...redisGet });
+    const bunRedisGet = await benchmarkRedisGet();
+    results.push({ operation: "READ", library: "Bun Redis", ...bunRedisGet });
+
+    const redisGet = await benchmarkRedisClientGet();
+    results.push({ operation: "READ", library: "redis", ...redisGet });
 
     // Print and save results
     printResults(results, "SQLite (File) vs Redis Benchmark Results");

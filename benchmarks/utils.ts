@@ -74,9 +74,24 @@ export function printResults(results: BenchmarkResult[], title: string) {
     // Performance comparison summary
     console.log("\nPerformance Comparison (Ops/sec):");
     const grouped = groupBy(results, (r) => r.operation);
+    
+    // Custom sort order
+    const sortOrder = ["Bun SQLite", "redis", "Bun Redis"];
+    
     const libraries = [...new Set(results.map(r => r.library))].sort((a, b) => {
+        // Known libraries first in specific order
+        const indexA = sortOrder.indexOf(a);
+        const indexB = sortOrder.indexOf(b);
+        
+        if (indexA !== -1 && indexB !== -1) return indexA - indexB;
+        if (indexA !== -1) return -1;
+        if (indexB !== -1) return 1;
+
+        // memcached last
         if (a === "memcached") return 1;
         if (b === "memcached") return -1;
+
+        // Alphabetical for others
         return a.localeCompare(b);
     });
 
