@@ -20,6 +20,9 @@ bun run bench:all
 bun run bench:sqlite   # SQLite (Bun vs sql.js)
 bun run bench:mariadb  # MariaDB (Bun vs mariadb vs mysql2)
 bun run bench:redis    # Redis (Bun vs redis vs memcached)
+
+# Comparison benchmark
+bun run bench:compare  # Bun SQLite (File) vs Bun Redis
 ```
 
 ## 📊 Tested Databases
@@ -86,6 +89,21 @@ Comparison between Bun's native SQL API, `mariadb` driver, and `mysql2` driver.
 | **DELETE** | 33,448 ops/sec | 32,294 ops/sec | 30,617 ops/sec | ⚠️ **1.1x faster** |
 
 **Summary:** Bun SQL performs neck-and-neck with established drivers like `mysql2` and `mariadb`, often taking a slight lead in raw operations per second.
+
+---
+
+### ⚔️ SQLite vs Redis Comparison
+
+Direct comparison between Bun's file-based SQLite (WAL mode) and Bun's Redis implementation.
+
+| Operation | Bun Redis | Bun SQLite (File) | Difference |
+|-----------|-----------|-------------------|------------|
+| **WRITE** | 57,304 ops/sec | 54,941 ops/sec | ⚖️ **Redis 1.0x faster** |
+| **READ** | 62,051 ops/sec | 43,835 ops/sec | 🚀 **Redis 1.4x faster** |
+
+**Summary:**
+- **Writes:** Redis and file-based SQLite performance is remarkably close for simple key-value writes.
+- **Reads:** Redis maintains a significant lead (40% faster) in read operations.
 
 ---
 

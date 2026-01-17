@@ -7,7 +7,8 @@
     "bench:all": "bun run benchmarks/index.ts",
     "bench:sqlite": "bun run benchmarks/sqlite.ts",
     "bench:mariadb": "bun run benchmarks/mariadb.ts",
-    "bench:redis": "bun run benchmarks/redis.ts"
+    "bench:redis": "bun run benchmarks/redis.ts",
+    "bench:compare": "bun run benchmarks/sqlite_vs_redis.ts"
   },
   "devDependencies": {
     "@types/bun": "latest"
