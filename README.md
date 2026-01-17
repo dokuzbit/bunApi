@@ -1,6 +1,6 @@
 # Bun API - Database Benchmark Suite
 
-Test suit to compare Bun's native API with official client packages.
+Test suite to compare Bun's native API with official client packages.
 
 ## 🚀 Quick Start
 
@@ -17,28 +17,28 @@ bun install
 bun run bench:all
 
 # Individual benchmarks
-bun run bench:sqlite   # SQLite (no external dependencies)
-bun run bench:mariadb  # MariaDB (server required)
-bun run bench:redis    # Redis (server required)
+bun run bench:sqlite   # SQLite (Bun vs sql.js)
+bun run bench:mariadb  # MariaDB (Bun vs mariadb vs mysql2)
+bun run bench:redis    # Redis (Bun vs redis vs memcached)
 ```
 
 ## 📊 Tested Databases
 
 1. **SQLite**: Bun SQLite API vs `sql.js` package
-2. **MariaDB**: Bun SQL API vs `mariadb` package  
-3. **Redis**: Bun Redis API vs `redis` package (Cache + Pub/Sub)
+2. **MariaDB**: Bun SQL API vs `mariadb` vs `mysql2` packages
+3. **Redis**: Bun Redis API vs `redis` vs `memcached` packages
 
-# 📊 Benchmark Results @ MacBook Air M1 (Oct 9, 2025)
+# 📊 Benchmark Results @ Mac Mini M4 (Jan 17, 2026)
 
-> **Test Environment:** MacBook Air M1  
-> **Test Date:** October 9, 2025  
-> **Runtime:** Bun v1.2.23 
+> **Test Environment:** Mac Mini M4
+> **Test Date:** January 17, 2026
+> **Runtime:** Bun v1.2.23 (Darwin arm64)
 
 ---
 
 ## 🎯 Overview
 
-This benchmark study compares the performance of Bun runtime with SQLite, Redis, and MariaDB databases. Tests are designed to simulate real-world scenarios.
+This benchmark study compares the performance of Bun runtime with SQLite, Redis, and MariaDB databases. Tests are designed to simulate real-world scenarios with 100,000 iterations for SQLite and 10,000 for others.
 
 ---
 
@@ -46,53 +46,54 @@ This benchmark study compares the performance of Bun runtime with SQLite, Redis,
 
 ### 🗄️ SQLite Performance
 
-Bun's native SQLite implementation demonstrates exceptional performance.
+Bun's native SQLite implementation demonstrates superior performance against the `sql.js` (WASM) library, especially in write-heavy operations.
 
-| Operation | Bun SQLite | Comparison | Performance Gain |
-|-----------|------------|------------|------------------|
-| **INSERT** | 211,248 ops/sec | vs 16,476 ops/sec | 🚀 **12.82x faster** |
-| **SELECT** | 34,813 ops/sec | vs 14,758 ops/sec | ⚡ **2.36x faster** |
-| **UPDATE** | 351,592 ops/sec | vs 21,019 ops/sec | 🔥 **16.73x faster** |
-| **DELETE** | 117,727 ops/sec | vs 8,734 ops/sec | 💨 **13.48x faster** |
+| Operation | Bun SQLite | sql.js | Performance Gain |
+|-----------|------------|--------|------------------|
+| **INSERT** | 57,624 ops/sec | 41,283 ops/sec | 🚀 **1.4x faster** |
+| **SELECT** | 57,758 ops/sec | 35,169 ops/sec | ⚡ **1.6x faster** |
+| **UPDATE** | 96,301 ops/sec | 46,659 ops/sec | 🔥 **2.1x faster** |
+| **DELETE** | 38,437 ops/sec | 21,511 ops/sec | 💨 **1.8x faster** |
 
-**Summary:** Bun SQLite shows exceptional performance across all operations, with an impressive **16.73x** speed improvement particularly in UPDATE operations.
+**Summary:** Bun SQLite consistently outperforms `sql.js` across all operations, achieving more than double the speed in UPDATE operations.
 
 ---
 
 ### 💾 Redis Performance
 
-Bun provides consistent performance advantages in Redis cache operations.
+Bun's native Redis client is compared against the popular `redis` package and `memcached`.
 
-| Operation | Bun Redis | Comparison | Performance Gain |
-|-----------|-----------|------------|------------------|
-| **Cache SET** | 37,464 ops/sec | vs 28,411 ops/sec | ⚡ **1.32x faster** |
-| **Cache GET** | 34,820 ops/sec | vs 30,283 ops/sec | 🔹 **1.15x faster** |
-| **Cache DEL** | 17,316 ops/sec | vs 15,148 ops/sec | 🔹 **1.14x faster** |
-| **Pub/Sub PUBLISH** | 34,543 ops/sec | vs 31,964 ops/sec | 🔹 **1.08x faster** |
+| Operation | Bun Redis | redis | memcached | Performance Gain |
+|-----------|-----------|-------|-----------|------------------|
+| **Cache SET** | 53,859 ops/sec | 53,168 ops/sec | 47,615 ops/sec | ⚡ **1.1x faster** |
+| **Cache GET** | 59,558 ops/sec | 52,693 ops/sec | 47,780 ops/sec | 🔹 **1.2x faster** |
+| **Cache DEL** | 27,728 ops/sec | 24,591 ops/sec | 24,851 ops/sec | 🔹 **1.1x faster** |
+| **PUBLISH** | 53,711 ops/sec | 52,961 ops/sec | N/A | 🔹 **1.0x faster** |
 
-**Summary:** In Redis operations, Bun offers a more pronounced performance advantage, especially in write operations (SET).
+**Summary:** Bun Redis provides a consistent performance edge over both the standard `redis` client and `memcached`, particularly in GET operations where it leads by 20%.
 
 ---
 
 ### 🐬 MariaDB Performance
 
-MariaDB shows balanced performance characteristics.
+Comparison between Bun's native SQL API, `mariadb` driver, and `mysql2` driver.
 
-| Operation | Bun SQL | Comparison | Performance |
-|-----------|---------|------------|-------------|
-| **INSERT** | 9,332 ops/sec | vs 8,565 ops/sec | ✅ **1.09x faster** |
-| **SELECT** | 9,350 ops/sec | vs 7,394 ops/sec | ⚡ **1.26x faster** |
-| **UPDATE** | 7,946 ops/sec | vs 7,726 ops/sec | ✅ **1.03x faster** |
-| **DELETE** | 13,600 ops/sec | vs 17,572 ops/sec | ⚠️ **MariaDB 1.29x faster** |
+| Operation | Bun SQL | mysql2 | mariadb | Performance |
+|-----------|---------|--------|---------|-------------|
+| **INSERT** | 15,451 ops/sec | 15,003 ops/sec | 13,868 ops/sec | ✅ **1.1x faster** |
+| **SELECT** | 14,089 ops/sec | 12,943 ops/sec | 13,417 ops/sec | ⚡ **1.1x faster** |
+| **UPDATE** | 14,851 ops/sec | 14,729 ops/sec | 14,563 ops/sec | ✅ **1.0x faster** |
+| **DELETE** | 33,448 ops/sec | 32,294 ops/sec | 30,617 ops/sec | ⚠️ **1.1x faster** |
 
-**Summary:** While Bun generally performs well in MariaDB tests, the native MariaDB driver delivers faster results in DELETE operations.
+**Summary:** Bun SQL performs neck-and-neck with established drivers like `mysql2` and `mariadb`, often taking a slight lead in raw operations per second.
 
 ---
 
 ## 📝 Notes
 
-- All tests were performed on the same hardware
-- Results reflect average values
-- Real-world performance may vary depending on use-case
+- **SQLite**: Tested with 100,000 iterations using file-based DB with WAL mode enabled.
+- **MariaDB/Redis**: Tested with 10,000 iterations against local instances.
+- **Hardware**: Mac Mini M4
+- Results reflect average values over multiple runs.
 
 ---

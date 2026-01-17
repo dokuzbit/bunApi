@@ -72,22 +72,84 @@ export function printResults(results: BenchmarkResult[], title: string) {
     console.table(formatted);
 
     // Performance comparison summary
-    console.log("\nPerformance Comparison:");
+    console.log("\nPerformance Comparison (Ops/sec):");
     const grouped = groupBy(results, (r) => r.operation);
+    const libraries = [...new Set(results.map(r => r.library))].sort((a, b) => {
+        if (a === "memcached") return 1;
+        if (b === "memcached") return -1;
+        return a.localeCompare(b);
+    });
 
-    for (const [operation, ops] of Object.entries(grouped)) {
-        if (ops.length === 2) {
-            const sorted = ops.sort((a, b) => b.opsPerSecond - a.opsPerSecond);
-            const first = sorted[0];
-            const second = sorted[1];
-            if (first && second) {
-                const multiplier = first.opsPerSecond / second.opsPerSecond;
-                console.log(
-                    `  ${operation}: ${first.library} is ${multiplier.toFixed(2)}x faster (${first.opsPerSecond.toFixed(0)} vs ${second.opsPerSecond.toFixed(0)} ops/sec)`
-                );
+    // Prepare table data and calculate column widths
+    const headers = ["Operation", ...libraries];
+    const widths: Record<string, number> = {};
+    headers.forEach(h => widths[h] = h.length);
+
+    const rows = Object.entries(grouped).map(([operation, ops]) => {
+        const rowData: any = { Operation: { text: operation, isFastest: false } };
+        
+        const sorted = [...ops].sort((a, b) => b.opsPerSecond - a.opsPerSecond);
+        const fastestLibrary = sorted[0]?.library;
+
+        libraries.forEach(lib => {
+            const result = ops.find(o => o.library === lib);
+            let text = result ? result.opsPerSecond.toFixed(0) : "-";
+            
+            const isFastest = result?.library === fastestLibrary;
+            if (isFastest && sorted.length > 1) {
+                const slowest = sorted[sorted.length - 1];
+                const multiplier = result.opsPerSecond / slowest.opsPerSecond;
+                text = `(${multiplier.toFixed(1)}x) ${text}`;
             }
+
+            rowData[lib] = { 
+                text, 
+                isFastest 
+            };
+            
+            if (text.length > (widths[lib] || 0)) {
+                widths[lib] = text.length;
+            }
+        });
+        
+        if (operation.length > widths["Operation"]) {
+            widths["Operation"] = operation.length;
         }
-    }
+        
+        return rowData;
+    });
+
+    // Add padding to widths
+    Object.keys(widths).forEach(k => widths[k] += 3);
+
+    // Print Table
+    let output = "";
+    
+    // Header
+    output += headers.map((h, i) => {
+        return i === 0 ? h.padEnd(widths[h]) : h.padStart(widths[h]);
+    }).join("") + "\n";
+    
+    // Separator
+    output += headers.map(h => "-".repeat(widths[h] - 1).padEnd(widths[h])).join("") + "\n";
+
+    // Data Rows
+    rows.forEach(row => {
+        output += headers.map((h, i) => {
+            const cell = row[h];
+            if (i === 0) {
+                // Operation column: Left Aligned
+                return cell.text.padEnd(widths[h]);
+            } else {
+                // Data columns: Right Aligned
+                const padding = " ".repeat(widths[h] - cell.text.length);
+                const content = cell.isFastest ? `\x1b[1m${cell.text}\x1b[0m` : cell.text;
+                return padding + content;
+            }
+        }).join("") + "\n";
+    });
+
+    console.log(output);
 }
 
 /**

@@ -1,4 +1,5 @@
 import mariadb from "mariadb";
+import mysql from "mysql2/promise";
 import { SQL } from "bun";
 import {
     benchmark,
@@ -21,7 +22,12 @@ const MARIADB_CONFIG = {
 
 async function ensureDatabase() {
     // First create database (connect without database)
-    const pool = mariadb.createPool(MARIADB_CONFIG);
+    const pool = mariadb.createPool({
+        host: MARIADB_CONFIG.host,
+        port: MARIADB_CONFIG.port,
+        user: MARIADB_CONFIG.user,
+        password: MARIADB_CONFIG.password
+    });
 
     try {
         const conn = await pool.getConnection();
@@ -61,6 +67,29 @@ async function setupDatabase() {
     return pool;
 }
 
+async function setupMysql2Database() {
+    // Ensure database exists first
+    await ensureDatabase();
+
+    // Connect with mysql2 package
+    const conn = await mysql.createConnection(MARIADB_CONFIG);
+
+    // Create test table
+    await conn.query(`
+    CREATE TABLE IF NOT EXISTS benchmark_test (
+      id INT AUTO_INCREMENT PRIMARY KEY,
+      name VARCHAR(255) NOT NULL,
+      value INT NOT NULL,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    )
+  `);
+
+    // Clear table
+    await conn.query("TRUNCATE TABLE benchmark_test");
+
+    return conn;
+}
+
 async function setupBunDatabase() {
     // Ensure database exists first
     await ensureDatabase();
@@ -70,6 +99,8 @@ async function setupBunDatabase() {
         database: MARIADB_CONFIG.database,
         username: MARIADB_CONFIG.user,
         password: MARIADB_CONFIG.password,
+        port: MARIADB_CONFIG.port,
+        hostname: MARIADB_CONFIG.host,
     });
 
     // Create test table
@@ -123,6 +154,24 @@ async function benchmarkMariadbInsert() {
     return result;
 }
 
+async function benchmarkMysql2Insert() {
+    const conn = await setupMysql2Database();
+
+    const result = await benchmark(
+        "mysql2 INSERT",
+        async () => {
+            await conn.execute(
+                "INSERT INTO benchmark_test (name, value) VALUES (?, ?)",
+                ["test_name", Math.floor(Math.random() * 1000)],
+            );
+        },
+        { name: "mysql2 INSERT", iterations: ITERATIONS },
+    );
+
+    await conn.end();
+    return result;
+}
+
 async function benchmarkBunSelect() {
     const sql = await setupBunDatabase();
 
@@ -170,6 +219,32 @@ async function benchmarkMariadbSelect() {
     );
 
     await pool.end();
+    return result;
+}
+
+async function benchmarkMysql2Select() {
+    const conn = await setupMysql2Database();
+
+    // Add test data
+    for (let i = 0; i < 1000; i++) {
+        await conn.execute(
+            "INSERT INTO benchmark_test (name, value) VALUES (?, ?)",
+            [`name_${i}`, i],
+        );
+    }
+
+    const result = await benchmark(
+        "mysql2 SELECT",
+        async () => {
+            await conn.execute(
+                "SELECT * FROM benchmark_test WHERE value = ? LIMIT 1",
+                [Math.floor(Math.random() * 1000)],
+            );
+        },
+        { name: "mysql2 SELECT", iterations: ITERATIONS },
+    );
+
+    await conn.end();
     return result;
 }
 
@@ -226,6 +301,35 @@ async function benchmarkMariadbUpdate() {
     return result;
 }
 
+async function benchmarkMysql2Update() {
+    const conn = await setupMysql2Database();
+
+    // Add test data
+    for (let i = 0; i < 1000; i++) {
+        await conn.execute(
+            "INSERT INTO benchmark_test (name, value) VALUES (?, ?)",
+            [`name_${i}`, i],
+        );
+    }
+
+    const result = await benchmark(
+        "mysql2 UPDATE",
+        async () => {
+            await conn.execute(
+                "UPDATE benchmark_test SET value = ? WHERE id = ?",
+                [
+                    Math.floor(Math.random() * 1000),
+                    Math.floor(Math.random() * 1000) + 1,
+                ],
+            );
+        },
+        { name: "mysql2 UPDATE", iterations: ITERATIONS },
+    );
+
+    await conn.end();
+    return result;
+}
+
 async function benchmarkBunDelete() {
     const sql = await setupBunDatabase();
 
@@ -275,8 +379,33 @@ async function benchmarkMariadbDelete() {
     return result;
 }
 
+async function benchmarkMysql2Delete() {
+    const conn = await setupMysql2Database();
+
+    // Add test data
+    for (let i = 0; i < 1000; i++) {
+        await conn.execute(
+            "INSERT INTO benchmark_test (name, value) VALUES (?, ?)",
+            [`name_${i}`, i],
+        );
+    }
+
+    const result = await benchmark(
+        "mysql2 DELETE",
+        async () => {
+            await conn.execute("DELETE FROM benchmark_test WHERE id = ?", [
+                Math.floor(Math.random() * 1000) + 1,
+            ]);
+        },
+        { name: "mysql2 DELETE", iterations: ITERATIONS },
+    );
+
+    await conn.end();
+    return result;
+}
+
 export async function runMariadbBenchmarks() {
-    console.log("\n🚀 Starting MariaDB Benchmark...\n");
+    console.log("\n🚀 Starting MariaDB/MySQL Benchmark...\n");
 
     const results: BenchmarkResult[] = [];
 
@@ -293,6 +422,13 @@ export async function runMariadbBenchmarks() {
             ...mariadbInsert,
         });
 
+        const mysql2Insert = await benchmarkMysql2Insert();
+        results.push({
+            operation: "INSERT",
+            library: "mysql2",
+            ...mysql2Insert,
+        });
+
         // SELECT Benchmarks
         console.log("📊 Running SELECT tests...");
         const bunSelect = await benchmarkBunSelect();
@@ -303,6 +439,13 @@ export async function runMariadbBenchmarks() {
             operation: "SELECT",
             library: "mariadb",
             ...mariadbSelect,
+        });
+
+        const mysql2Select = await benchmarkMysql2Select();
+        results.push({
+            operation: "SELECT",
+            library: "mysql2",
+            ...mysql2Select,
         });
 
         // UPDATE Benchmarks
@@ -317,6 +460,13 @@ export async function runMariadbBenchmarks() {
             ...mariadbUpdate,
         });
 
+        const mysql2Update = await benchmarkMysql2Update();
+        results.push({
+            operation: "UPDATE",
+            library: "mysql2",
+            ...mysql2Update,
+        });
+
         // DELETE Benchmarks
         console.log("📊 Running DELETE tests...");
         const bunDelete = await benchmarkBunDelete();
@@ -329,15 +479,22 @@ export async function runMariadbBenchmarks() {
             ...mariadbDelete,
         });
 
+        const mysql2Delete = await benchmarkMysql2Delete();
+        results.push({
+            operation: "DELETE",
+            library: "mysql2",
+            ...mysql2Delete,
+        });
+
         // Print and save results
-        printResults(results, "MariaDB Benchmark Results");
+        printResults(results, "MariaDB/MySQL Benchmark Results");
         await saveResults(results, "mariadb");
 
         return results;
     } catch (error) {
-        console.error("❌ MariaDB benchmark error:", error);
+        console.error("❌ MariaDB/MySQL benchmark error:", error);
         console.error("\nPlease check the following:");
-        console.error("1. Make sure MariaDB server is running");
+        console.error("1. Make sure MariaDB/MySQL server is running");
         console.error("2. Check connection details in .env file");
         console.error("3. Make sure the specified database exists");
         throw error;
@@ -348,7 +505,7 @@ export async function runMariadbBenchmarks() {
 if (import.meta.main) {
     runMariadbBenchmarks()
         .then(() => {
-            console.log("\n✅ MariaDB benchmark completed!");
+            console.log("\n✅ MariaDB/MySQL benchmark completed!");
             process.exit(0);
         })
         .catch((error) => {

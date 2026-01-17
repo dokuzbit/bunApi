@@ -1,8 +1,10 @@
 import { Database as BunDatabase } from "bun:sqlite";
-import initSqlJs, { type Database as SqlJsDatabase } from "sql.js";
+import initSqlJs from "sql.js";
+import { existsSync, unlinkSync } from "fs";
 import { benchmark, printResults, saveResults, type BenchmarkResult } from "./utils";
 
-const ITERATIONS = 10_000;
+const ITERATIONS = 100_000;
+const BUN_DB_FILE = "bench_bun.db";
 
 let SQL: any = null;
 
@@ -14,7 +16,17 @@ async function initSqlJsModule() {
 }
 
 async function setupBunDatabase() {
-    const db = new BunDatabase(":memory:");
+    if (existsSync(BUN_DB_FILE)) {
+        try {
+            unlinkSync(BUN_DB_FILE);
+            if (existsSync(`${BUN_DB_FILE}-wal`)) unlinkSync(`${BUN_DB_FILE}-wal`);
+            if (existsSync(`${BUN_DB_FILE}-shm`)) unlinkSync(`${BUN_DB_FILE}-shm`);
+        } catch (e) {}
+    }
+    
+    const db = new BunDatabase(BUN_DB_FILE);
+    db.exec("PRAGMA journal_mode = WAL;");
+    db.exec("PRAGMA synchronous = NORMAL;");
 
     db.run(`
     CREATE TABLE IF NOT EXISTS benchmark_test (
@@ -44,9 +56,9 @@ async function setupSqlJsDatabase() {
     return db;
 }
 
-// ============================================
+// ============================================ 
 // INSERT BENCHMARKS
-// ============================================
+// ============================================ 
 
 async function benchmarkBunInsert() {
     const db = await setupBunDatabase();
@@ -83,9 +95,9 @@ async function benchmarkSqlJsInsert() {
     return result;
 }
 
-// ============================================
+// ============================================ 
 // SELECT BENCHMARKS
-// ============================================
+// ============================================ 
 
 async function benchmarkBunSelect() {
     const db = await setupBunDatabase();
@@ -136,9 +148,9 @@ async function benchmarkSqlJsSelect() {
     return result;
 }
 
-// ============================================
+// ============================================ 
 // UPDATE BENCHMARKS
-// ============================================
+// ============================================ 
 
 async function benchmarkBunUpdate() {
     const db = await setupBunDatabase();
@@ -190,9 +202,9 @@ async function benchmarkSqlJsUpdate() {
     return result;
 }
 
-// ============================================
+// ============================================ 
 // DELETE BENCHMARKS
-// ============================================
+// ============================================ 
 
 async function benchmarkBunDelete() {
     const db = await setupBunDatabase();
@@ -236,9 +248,9 @@ async function benchmarkSqlJsDelete() {
     return result;
 }
 
-// ============================================
+// ============================================ 
 // MAIN BENCHMARK RUNNER
-// ============================================
+// ============================================ 
 
 export async function runSqliteBenchmarks() {
     console.log("\n🚀 Starting SQLite Benchmark...\n");
@@ -278,7 +290,7 @@ export async function runSqliteBenchmarks() {
     results.push({ operation: "DELETE", library: "sql.js", ...sqlJsDelete });
 
     // Print and save results
-    printResults(results, "SQLite Benchmark Results (Bun SQLite vs sql.js)");
+    printResults(results, "SQLite Benchmark Results");
     await saveResults(results, "sqlite");
 
     return results;
